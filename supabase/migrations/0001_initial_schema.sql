@@ -58,6 +58,7 @@ create table if not exists public.profiles (
   sex text check (sex in ('male', 'female', 'other')),
   height_cm numeric,
   current_weight_kg numeric,
+  activity_level text check (activity_level in ('sedentary', 'light', 'moderate', 'active', 'very_active')),
   timezone text not null default 'Asia/Kolkata',
   locale text not null default 'en-IN',
   onboarding_completed boolean not null default false,

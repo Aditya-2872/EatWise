@@ -49,6 +49,10 @@ function Button({
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      // A `render` prop replaces the element entirely (e.g. <Link>), so the
+      // Base UI "must be a native <button>" assertion has to be off —
+      // otherwise every button-as-link throws a console error.
+      nativeButton={props.nativeButton ?? !props.render}
       {...props}
     />
   )

@@ -137,7 +137,7 @@ select
     end
   ))
 from foods f
-on conflict (source, source_id) do nothing;
+on conflict (source, source_id) where source_id is not null do nothing;
 
 -- ------------------------------------------------------------------
 -- food_aliases (regional names, spellings, Hindi/Hinglish variants)
