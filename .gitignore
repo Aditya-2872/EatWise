@@ -42,3 +42,7 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# Local push logs (debug artifacts)
+push*.log
+push*.log.err
