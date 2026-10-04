@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { signupSchema, type SignupInput } from "@/lib/validation/auth";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [result, setResult] = useState<AuthActionResult>({});
   const {
     register,
@@ -29,8 +31,20 @@ export default function SignupPage() {
 
   async function onSubmit(values: SignupInput) {
     setResult({});
-    const res = await signupAction(values);
-    if (res) setResult(res);
+    try {
+      const res = await signupAction(values);
+      if (!res) return;
+      if (res.redirectTo) {
+        router.push(res.redirectTo);
+        router.refresh();
+        return;
+      }
+      setResult(res);
+    } catch (err) {
+      setResult({
+        error: err instanceof Error ? err.message : "Something went wrong.",
+      });
+    }
   }
 
   return (

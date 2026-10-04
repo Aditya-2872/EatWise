@@ -47,7 +47,7 @@ function friendlyAuthError(message: string): string {
 
 export async function signupAction(
   values: SignupInput,
-): Promise<AuthActionResult> {
+): Promise<AuthActionResult & { redirectTo?: string }> {
   const parsed = signupSchema.safeParse(values);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Please check your details." };
@@ -69,7 +69,7 @@ export async function signupAction(
 
   // If email confirmation is disabled, signUp returns a session directly.
   if (data.session) {
-    redirect("/app/dashboard");
+    return { redirectTo: "/app/dashboard" };
   }
 
   return {
@@ -80,7 +80,7 @@ export async function signupAction(
 
 export async function loginAction(
   values: LoginInput,
-): Promise<AuthActionResult> {
+): Promise<AuthActionResult & { redirectTo?: string }> {
   const parsed = loginSchema.safeParse(values);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Please check your details." };
@@ -96,7 +96,20 @@ export async function loginAction(
     return { error: friendlyAuthError(error.message) };
   }
 
-  redirect("/app/dashboard");
+  // Cannot call server-side redirect() from a client-invoked server action
+  // without throwing NEXT_REDIRECT into the caller. Tell the client to
+  // navigate instead, then use the standard redirect() for form-action use.
+  return { redirectTo: "/app/dashboard" };
+}
+
+export async function loginActionForm(
+  values: LoginInput,
+): Promise<void> {
+  const result = await loginAction(values);
+  if (result.error) {
+    throw new Error(result.error);
+  }
+  redirect(result.redirectTo ?? "/app/dashboard");
 }
 
 export async function logoutAction(): Promise<void> {
@@ -129,7 +142,7 @@ export async function forgotPasswordAction(
 
 export async function resetPasswordAction(
   values: ResetPasswordInput,
-): Promise<AuthActionResult> {
+): Promise<AuthActionResult & { redirectTo?: string }> {
   const parsed = resetPasswordSchema.safeParse(values);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Please check your details." };
@@ -144,5 +157,5 @@ export async function resetPasswordAction(
     return { error: friendlyAuthError(error.message) };
   }
 
-  redirect("/app/dashboard");
+  return { redirectTo: "/app/dashboard" };
 }

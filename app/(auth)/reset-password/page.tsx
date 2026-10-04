@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +18,7 @@ import {
 } from "@/lib/validation/auth";
 
 export default function ResetPasswordPage() {
+  const router = useRouter();
   const [result, setResult] = useState<AuthActionResult>({});
   const {
     register,
@@ -29,8 +31,20 @@ export default function ResetPasswordPage() {
 
   async function onSubmit(values: ResetPasswordInput) {
     setResult({});
-    const res = await resetPasswordAction(values);
-    if (res) setResult(res);
+    try {
+      const res = await resetPasswordAction(values);
+      if (!res) return;
+      if (res.redirectTo) {
+        router.push(res.redirectTo);
+        router.refresh();
+        return;
+      }
+      setResult(res);
+    } catch (err) {
+      setResult({
+        error: err instanceof Error ? err.message : "Something went wrong.",
+      });
+    }
   }
 
   return (
